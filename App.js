@@ -26,28 +26,32 @@ const App = () => {
         <View style={styles.container}>
             {currentPage === 1 && (
                 <View style={styles.inputContainer}>
-                    <Text style={styles.title}>Assignment 1</Text>
-                    <Text style={styles.instructions}>Fill in the blanks, following the prompts that are asked</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Name"
-                        value={name}
-                        onChangeText={setName}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Noun"
-                        value={noun}
-                        onChangeText={setNoun}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="An Event"
-                        value={event}
-                        onChangeText={setEvent}
-                    />
-                    <Button title="Make my hall pass" onPress={createStory} />
-                    <Button title="Clear" onPress={clearInputs} />
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>Assignment 1</Text>
+                    </View>
+                    <View style={styles.instructionsContainer}>
+                        <Text style={styles.instructions}>How to play Mad Libs: Fill in the blanks, following the hints that are given.</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Name"
+                            value={name}
+                            onChangeText={setName}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Noun"
+                            value={noun}
+                            onChangeText={setNoun}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="An Event"
+                            value={event}
+                            onChangeText={setEvent}
+                        />
+                        <Button title="Make my hall pass" onPress={createStory} />
+                        <Button title="Clear" onPress={clearInputs} />
+                    </View>
                 </View>
             )}
             {currentPage === 2 && (
@@ -90,16 +94,29 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         width: '100%',
+        flex: 1,
+    },
+    titleContainer: {
+        flex: 0.3,
+        justifyContent: 'left',
+        alignItems: 'left',
+        marginTop: 45,
+    },
+    instructionsContainer: {
+        flex: 0.8
     },
     title: {
-        fontSize: 22,
+        fontSize: 32,
         fontWeight: 'bold',
-        marginBottom: 45,
+        marginBottom: 35,
+        color: 'magenta',
+        textDecorationLine: 'underline',
     },
     instructions: {
         fontSize: 18,
         color: 'blue',
         marginBottom: 45,
+        fontWeight: 'bold',
     },
     input: {
         height: 40,
@@ -107,11 +124,14 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 20,
         padding: 10,
+        borderRadius: 20,
     },
     header: {
-        fontSize: 45,
+        fontSize: 50,
+        color: 'lightblue',
         fontWeight: 'bold',
         textAlign: 'center',
+        textDecorationLine: 'underline',
         marginVertical: 10,
         marginBottom: 45,
     },
@@ -126,9 +146,10 @@ const styles = StyleSheet.create({
     },
     underlineText: {
         fontSize: 24,
+        color: 'red',
         textDecorationLine: 'underline',
         textDecorationStyle: 'solid',
-        textDecorationColor: 'black',
+        textDecorationColor: 'red',
     },
     storyScreen: {
         flex: 1,
@@ -149,7 +170,8 @@ const styles = StyleSheet.create({
     verticalText: {
         fontSize: 60,
         fontWeight: 'bold',
-        color: 'black',
+        color: 'blue',
+        textDecorationLine: 'underline',
         left: 0,
         top: 0,
         width: 450,       
