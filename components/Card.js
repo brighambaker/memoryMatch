@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 
 const Card = ({ image, onFlip, cardId, isFlipped }) => {
-    const [flipped, setFlipped] = useState(isFlipped);
-
     const handlePress = () => {
-        setFlipped(!flipped);
         onFlip(cardId);
     };
 
     return (
         <TouchableOpacity onPress={handlePress}>
             <View style={styles.card}>
-                {flipped ? (
+                {isFlipped ? (
                     <Image source={image} style={styles.image} resizeMode="contain" />
                 ) : (
                     <View style={styles.cardBack} />

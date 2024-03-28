@@ -8,13 +8,13 @@ const images = [
     require('./assets/images/jack.png'),
     require('./assets/images/king.png'),
     require('./assets/images/queen.png'),
-    require('./assets/images/ten.png')
+    //require('./assets/images/ten.png')
 ];
 
 export default function App() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Memory Match Game</Text>
+            <Text style={styles.title}> </Text>
             <GameBoard images={images} />
         </View>
     );

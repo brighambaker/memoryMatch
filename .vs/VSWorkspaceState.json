@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\components"
   ],
-  "SelectedNode": "\\utils",
+  "SelectedNode": "\\components\\Card.js",
   "PreviewInSolutionExplorer": false
 }

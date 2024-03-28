@@ -1,85 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Button, Alert, Text } from 'react-native';
 import Card from './Card';
 
 const GameBoard = ({ images }) => {
     const [cards, setCards] = useState([]);
     const [flippedIndices, setFlippedIndices] = useState([]);
+    const [matchedIndices, setMatchedIndices] = useState([]);
+    const [gameStarted, setGameStarted] = useState(false);
 
     useEffect(() => {
-        initializeGame();
-    }, []);
+        if (flippedIndices.length === 2) {
+            const [firstIndex, secondIndex] = flippedIndices;
+            const firstCard = cards[firstIndex];
+            const secondCard = cards[secondIndex];
 
-    const initializeGame = () => {
-        let cardArray = images.map((image, index) => ({
-            id: index,
-            image: image,
-            isFlipped: false
-        }));
-        cardArray = [...cardArray, ...cardArray]; // Duplicate cards for pairs
-        cardArray = shuffleArray(cardArray); // Shuffle the cards
-        setCards(cardArray);
-        setFlippedIndices([]);
-    };
-
-    const shuffleArray = (array) => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    };
-
-    const handleFlip = (index) => {
-        let tempCards = [...cards];
-        tempCards[index].isFlipped = true;
-
-        let flippedCards = tempCards.filter(card => card.isFlipped);
-
-        if (flippedCards.length === 2) {
-            if (flippedCards[0].image === flippedCards[1].image) {
-                // Match found
+            if (firstCard && secondCard && firstCard.image === secondCard.image) {
                 Alert.alert("Match found!");
-                setFlippedIndices([...flippedIndices, flippedCards[0].id, flippedCards[1].id]);
-            } else {
-                // No match, flip back after a short delay
+                setMatchedIndices(prev => [...prev, firstIndex, secondIndex]);
+                setFlippedIndices([]);
+            } else if (firstCard && secondCard) {
                 setTimeout(() => {
-                    tempCards[flippedCards[0].id].isFlipped = false;
-                    tempCards[flippedCards[1].id].isFlipped = false;
-                    setCards(tempCards);
+                    setCards(currentCards =>
+                        currentCards.map((card, index) =>
+                            index === firstIndex || index === secondIndex ? { ...card, isFlipped: false } : card
+                        )
+                    );
+                    setFlippedIndices([]);
                 }, 1000);
             }
         }
+    }, [flippedIndices, cards]);
 
-        if (flippedIndices.length + 2 === cards.length) {
-            Alert.alert("Game Over", "You have matched all cards!");
+    const initializeGame = () => {
+        const doubledImages = [...images, ...images];
+        const shuffledCards = doubledImages.map((image, index) => ({
+            id: index,
+            image,
+            isFlipped: false
+        })).sort(() => Math.random() - 0.5);
+
+        setCards(shuffledCards);
+        setFlippedIndices([]);
+        setMatchedIndices([]);
+        setGameStarted(true);
+    };
+
+    const handleFlip = (index) => {
+        if (!gameStarted || cards[index].isFlipped || flippedIndices.length >= 2 || matchedIndices.includes(index)) {
+            return;
         }
 
-        setCards(tempCards);
+        const newFlippedIndices = [...flippedIndices, index];
+        setFlippedIndices(newFlippedIndices);
+
+        const newCards = cards.map((card, idx) =>
+            idx === index ? { ...card, isFlipped: true } : card
+        );
+        setCards(newCards);
+    };
+
+    const resetGame = () => {
+        initializeGame();
     };
 
     return (
-        <View style={styles.board}>
-            {cards.map((card, index) => (
-                <Card
-                    key={index}
-                    cardId={index}
-                    image={card.image}
-                    isFlipped={card.isFlipped || flippedIndices.includes(card.id)}
-                    onFlip={handleFlip}
-                />
-            ))}
+        <View style={styles.container}>
+            <Text style={styles.title}>Memory Match</Text>
+            {!gameStarted && <Button title="Start Game" onPress={initializeGame} />}
+            <View style={styles.board}>
+                {cards.map((card, index) => (
+                    <Card
+                        key={index}
+                        cardId={index}
+                        image={card.image}
+                        isFlipped={card.isFlipped || matchedIndices.includes(index)}
+                        onFlip={() => handleFlip(index)}
+                    />
+                ))}
+            </View>
+            {gameStarted && <Button title="Reset Game" onPress={resetGame} />}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    board: {
-        flexWrap: 'wrap',
-        flexDirection: 'row',
+    container: {
+        flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
-    }
+        alignItems: 'center',
+        padding: 10,
+        paddingTop: 50,
+    },
+    title: {
+        fontSize: 24,
+        marginBottom: 20,
+    },
+    board: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
 });
 
 export default GameBoard;
