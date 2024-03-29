@@ -8,14 +8,19 @@ const images = [
     require('./assets/images/jack.png'),
     require('./assets/images/king.png'),
     require('./assets/images/queen.png'),
-    //require('./assets/images/ten.png')
+    require('./assets/images/ten.png')
 ];
+// Import sounds
+const sounds = {
+    gameWin: require('./assets/sounds/gameWin.mp3'),
+    successDing: require('./assets/sounds/successDing.mp3'),
+    wrongBuzzer: require('./assets/sounds/wrongBuzzer.mp3')
+};
 
 export default function App() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}> </Text>
-            <GameBoard images={images} />
+            <GameBoard images={images} sounds={sounds} />
         </View>
     );
 };

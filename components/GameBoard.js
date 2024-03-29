@@ -1,24 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Button, Alert, Text } from 'react-native';
+import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 import Card from './Card';
 
-const GameBoard = ({ images }) => {
+const GameBoard = ({ images, sounds }) => {
     const [cards, setCards] = useState([]);
     const [flippedIndices, setFlippedIndices] = useState([]);
     const [matchedIndices, setMatchedIndices] = useState([]);
     const [gameStarted, setGameStarted] = useState(false);
 
+    const difficultyLevels = {
+        easy: 3,
+        medium: 4,
+        hard: 5
+    };
+
     useEffect(() => {
         if (flippedIndices.length === 2) {
+            Haptics.selectionAsync(); // Trigger haptic feedback on guess
             const [firstIndex, secondIndex] = flippedIndices;
             const firstCard = cards[firstIndex];
             const secondCard = cards[secondIndex];
 
             if (firstCard && secondCard && firstCard.image === secondCard.image) {
-                Alert.alert("Match found!");
+                playSound(sounds.successDing);
                 setMatchedIndices(prev => [...prev, firstIndex, secondIndex]);
                 setFlippedIndices([]);
+                if (matchedIndices.length + 2 === cards.length) {
+                    playSound(sounds.gameWin);
+                }
             } else if (firstCard && secondCard) {
+                playSound(sounds.wrongBuzzer);
                 setTimeout(() => {
                     setCards(currentCards =>
                         currentCards.map((card, index) =>
@@ -29,10 +42,11 @@ const GameBoard = ({ images }) => {
                 }, 1000);
             }
         }
-    }, [flippedIndices, cards]);
+    }, [flippedIndices, cards, matchedIndices, sounds]);
 
-    const initializeGame = () => {
-        const doubledImages = [...images, ...images];
+    const initializeGame = (difficulty) => {
+        let selectedImages = images.slice(0, difficultyLevels[difficulty]);
+        const doubledImages = [...selectedImages, ...selectedImages];
         const shuffledCards = doubledImages.map((image, index) => ({
             id: index,
             image,
@@ -60,15 +74,40 @@ const GameBoard = ({ images }) => {
     };
 
     const resetGame = () => {
-        initializeGame();
+        setGameStarted(false);
+        setCards([]);
+        setFlippedIndices([]);
+        setMatchedIndices([]);
+    };
+
+    const playSound = async (soundFile) => {
+        const soundObject = new Audio.Sound();
+        try {
+            await soundObject.loadAsync(soundFile);
+            await soundObject.playAsync();
+        } catch (error) {
+            console.error('Error playing sound', error);
+        }
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Memory Match</Text>
-            {!gameStarted && <Button title="Start Game" onPress={initializeGame} />}
+            {!gameStarted && (
+                <View style={styles.difficultyButtons}>
+                    <View style={{ marginBottom: 10 }}>
+                        <Button title="Easy" onPress={() => initializeGame('easy')} />
+                    </View>
+                    <View style={{ marginBottom: 10 }}>
+                        <Button title="Medium" onPress={() => initializeGame('medium')} />
+                    </View>
+                    <View style={{ marginBottom: 10 }}>
+                        <Button title="Hard" onPress={() => initializeGame('hard')} />
+                    </View>
+                </View>
+            )}
             <View style={styles.board}>
-                {cards.map((card, index) => (
+                {gameStarted && cards.map((card, index) => (
                     <Card
                         key={index}
                         cardId={index}
@@ -93,6 +132,9 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
+        marginBottom: 20,
+    },
+    difficultyButtons: {
         marginBottom: 20,
     },
     board: {
