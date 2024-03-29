@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Button, Alert, Text, Vibration } from 'react-native';
+import { View, StyleSheet, Button, Text, Vibration } from 'react-native';
 import { Audio } from 'expo-av';
 import Card from './Card';
 
@@ -11,6 +11,7 @@ const GameBoard = ({ images, sounds }) => {
     const [matchedIndices, setMatchedIndices] = useState([]);
     const [gameStarted, setGameStarted] = useState(false);
     const [feedbackGiven, setFeedbackGiven] = useState(false);
+    const [gameWon, setGameWon] = useState(false);
 
     // Defines the number of cards to use for each difficulty level
     const difficultyLevels = {
@@ -26,50 +27,51 @@ const GameBoard = ({ images, sounds }) => {
             const firstCard = cards[firstIndex];
             const secondCard = cards[secondIndex];
 
+            // Prevents additional feedback if already given for the current pair
             if (!feedbackGiven && firstCard && secondCard) {
+                setFeedbackGiven(true);
+
                 if (firstCard.image === secondCard.image) {
-                    // Correct match
+                    // Play sound and vibrate for correct match
                     playSound(sounds.successDing);
-                    Vibration.vibrate(500);  // Short vibration for correct match
+                    Vibration.vibrate(500);
                     setMatchedIndices(prev => [...prev, firstIndex, secondIndex]);
 
-                    // Check for game win condition
-                    if (matchedIndices.length + 2 === cards.length) {
+                    // Check if all cards are matched to trigger game win
+                    if (matchedIndices.length + 2 === cards.length && cards.length > 0) {
                         playSound(sounds.gameWin);
-                        Vibration.vibrate(1000);  // Longer vibration for game win
+                        Vibration.vibrate(1000); // Long vibration for game win
+                        setGameWon(true);
                     }
 
                     setFlippedIndices([]);
-                    setFeedbackGiven(true);
 
-                    // Reset feedbackGiven for the next action
+                    // Reset feedbackGiven after a short delay
                     setTimeout(() => {
                         setFeedbackGiven(false);
-                    }, 500);  // Reset after the same duration as the vibration
+                    }, 500);
 
                 } else {
-                    // Incorrect match
+                    // Play sound and vibrate for incorrect match
                     playSound(sounds.wrongBuzzer);
-                    Vibration.vibrate(500);  // Vibration for incorrect match
-                    setFeedbackGiven(true);
+                    Vibration.vibrate(500);
 
                     setTimeout(() => {
+                        // Flip the cards back over and reset feedbackGiven
                         setCards(currentCards =>
                             currentCards.map((card, index) =>
                                 index === firstIndex || index === secondIndex ? { ...card, isFlipped: false } : card
                             )
                         );
                         setFlippedIndices([]);
-                        setFeedbackGiven(false);  // Reset feedbackGiven for the next action
-                    }, 1000);  // Wait for 1 second before allowing the next action
+                        setFeedbackGiven(false);
+                    }, 1000);
                 }
             }
         } else if (feedbackGiven) {
             setFeedbackGiven(false);
         }
     }, [flippedIndices, cards, matchedIndices, sounds, feedbackGiven]);
-
-
 
     // Initializes the game with the selected difficulty
     const initializeGame = (difficulty) => {
@@ -85,6 +87,7 @@ const GameBoard = ({ images, sounds }) => {
         setFlippedIndices([]);
         setMatchedIndices([]);
         setGameStarted(true);
+        setGameWon(false);  // Reset game won state for new game
     };
 
     // Handles the card flip action
@@ -108,6 +111,7 @@ const GameBoard = ({ images, sounds }) => {
         setCards([]);
         setFlippedIndices([]);
         setMatchedIndices([]);
+        setGameWon(false);  // Ensure game won state is reset
     };
 
     // Function to load and play a sound
@@ -121,11 +125,10 @@ const GameBoard = ({ images, sounds }) => {
         }
     };
 
-    // Render the game board, difficulty selection buttons, and the cards
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Memory Match</Text>
-            {!gameStarted && (
+            {!gameStarted && !gameWon && (
                 <View style={styles.difficultyButtons}>
                     <View style={styles.buttonContainer}>
                         <Button title="Easy" onPress={() => initializeGame('easy')} />
@@ -138,23 +141,29 @@ const GameBoard = ({ images, sounds }) => {
                     </View>
                 </View>
             )}
-            <View style={styles.board}>
-                {gameStarted && cards.map((card, index) => (
-                    <Card
-                        key={index}
-                        cardId={index}
-                        image={card.image}
-                        isFlipped={card.isFlipped || matchedIndices.includes(index)}
-                        onFlip={() => handleFlip(index)}
-                    />
-                ))}
-            </View>
-            {gameStarted && <Button title="Reset Game" onPress={resetGame} />}
+            {gameStarted && !gameWon && (
+                <View style={styles.board}>
+                    {cards.map((card, index) => (
+                        <Card
+                            key={index}
+                            cardId={index}
+                            image={card.image}
+                            isFlipped={card.isFlipped || matchedIndices.includes(index)}
+                            onFlip={() => handleFlip(index)}
+                        />
+                    ))}
+                </View>
+            )}
+            {gameWon && (
+                <View style={styles.winMessageContainer}>
+                    <Text style={styles.winMessage}>You Win!</Text>
+                    <Button title="Back to Main Menu" onPress={resetGame} />
+                </View>
+            )}
         </View>
     );
 };
 
-// Styles for the game board layout
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -178,6 +187,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
+    },
+    winMessageContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    winMessage: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginBottom: 20,
     },
 });
 
