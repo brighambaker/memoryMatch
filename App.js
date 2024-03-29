@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import GameBoard from './components/GameBoard';
 
-// Import images
+// Import the card images to be used in the game
 const images = [
     require('./assets/images/ace.png'),
     require('./assets/images/jack.png'),
@@ -10,13 +10,14 @@ const images = [
     require('./assets/images/queen.png'),
     require('./assets/images/ten.png')
 ];
-// Import sounds
+// Import the sound files for game events
 const sounds = {
-    gameWin: require('./assets/sounds/gameWin.mp3'),
-    successDing: require('./assets/sounds/successDing.mp3'),
-    wrongBuzzer: require('./assets/sounds/wrongBuzzer.mp3')
+    gameWin: require('./assets/sounds/gameWin.mp3'), // Sound played when a game is won
+    successDing: require('./assets/sounds/successDing.mp3'), // Sound played when a match is made
+    wrongBuzzer: require('./assets/sounds/wrongBuzzer.mp3') // Sound played when an incorrect guess is made
 };
 
+// The main App component that renders the game board
 export default function App() {
     return (
         <View style={styles.container}>
@@ -25,6 +26,7 @@ export default function App() {
     );
 };
 
+// StyleSheet for the App component
 const styles = StyleSheet.create({
     container: {
         flex: 1,
